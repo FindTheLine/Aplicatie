@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}
+    Acasa
+{% endblock %}
+{% block content %}
+<div class="progressContainer d-none"><div id="progress" class="progress"></div></div>
+    {% from 'employee_page.html' import employee_page  %}
+    {% if evals|list|length > 0 %}
+        {{ employee_page(user=current_user, current_employee=current_user, comment_form=comment_form,project_name=project_name,
+             project_id=project_id,evals=evals,active_projects=active_projects,assignments=assignments,all_averages=all_averages,comments=comments, 
+             project_averages=project_averages) }}
+    {% else %}
+        {{ employee_page(user=current_user, current_employee=current_user, comment_form=comment_form,project_name=project_name,
+             project_id=project_id,evals=evals,active_projects=active_projects, all_averages=all_averages) }}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% from 'macros/macros.html' import input_group %}
+{% extends 'base.html' %}
+{% block title %}Resetare parola{% endblock %}
+{% block content %}
+<main>
+  <section>
+    <div class="container">
+      <div class="bg-split mx-auto pt-xl-3 px-3 mt-5 mb-4 rounded-border box-shadow-1">
+        <div class="row g-2 g-md-4 overflow-hidden justify-content-between">
+          <div class="col-12 col-md-6 px-0 pb-5 mt-0">
+            <div class="login-form mx-auto rounded-border overflow-hidden">
+              <h3 class="p-3 p-xxl-4 pt-md-4 text-gray text-center mb-0">TRIMITERE LINK DE RESETARE</h3>
+              <hr class="mx-3 my-2">
+              <form class="px-3 mb-3 row g-3" method="POST" action="{{url_for('auth.reset_request')}}" id="request-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="col col-12">
+                  {{ input_group('request-form-email','email','email','Email',icon='fa-envelope') }}
+                </div>      
+                <button type="submit" class="btn main-btn btn-minimalist btn-block mt-3 text-white rounded-corner mt-2">TRIMITE</button>
+              </form>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 d-none d-md-flex align-items-center justify-content-start border-start mt-0">
+            <div class="me-2 mb-5 mt-4 ms-3">
+              <img src="../static/img/PngItem_5218103-min.png" alt="Imagine cu statistici de management" class="login-img d-block my-auto" style="max-width:100%;max-height:375px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

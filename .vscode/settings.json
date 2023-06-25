@@ -1,0 +1,10 @@
+{
+    "workbench.colorCustomizations": {
+        "functions": "#FF9900"
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none"
+    
+}

@@ -1,0 +1,334 @@
+{% macro employee_page(user, current_employee,comment_form,project_name, project_id,evals,active_projects,current_project='',employees='',manager='',comments='',assignments=[], all_averages='', project_averages='') -%}
+    {% from 'macros/macros.html' import eval_row, input_group, select_group, text_area, loop_objects_name, criteria_legend, interval_form, display_section_charts, delete_interval %}
+
+    {% macro modal_assignment_form(project_id) -%}
+        {% if user.is_manager() %}
+            <div class="modal-content" data-id="{{id}}">
+                <div class="modal-header pb-2">
+                    <p class="modal-title fstyle-primary text-secondary small-head fw-bold" id="view-project-modal">Functie - {% if project_name %}{{ project_name[:19]|title }}{{'...' if project_name[19]}}{% endif %} </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0 pb-2">
+                    <form class="row" action="{{url_for('data.add_user_assignment',id=current_employee.id,project_id=project_id)}}" method="POST" id="add-assignment-form" data-id="{{id}}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="col-12">
+                            {{ select_group('add-assignment-form-function','assignment','Functie',current_project.assignments) }}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary text-white rounded-2 w-100" id="add-assignment-form-button" form="add-assignment-form" type="submit">Adauga</button>
+                </div>
+            </div>
+        {% endif %}
+    {%- endmacro %}
+
+    {% macro modal_form(id,eval_id,criteria) -%}
+        <div class="modal-content" data-id="{{id}}">
+            <div class="modal-header">
+                <p class="modal-title fstyle-primary text-secondary small-head fw-bold" id="view-project-modal">Comentarii - {{criteria|title}}</p>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0 pb-2 px-0">
+                <!-- <h3 class="mt-2 mb-0 text-gray ps-3"></h3> -->
+                <div class="chat-bg">
+                    <div class="overflow-auto" style="max-height:275px;">
+                        <div class="w-100 row g-3 mt-1 mb-3">
+                            {% set exists = {'test': False} %}
+                            {% for comment in comments|sort(attribute="date", reverse=true) %}
+                                {% if comment.eval_id == eval_id and comment.criteria == criteria%}                        
+                                    {% if exists.update({'test': True}) %} {% endif %}
+    
+                                    {%if user.id == comment.user_id %}
+                                        {% set margin = 'ms-auto'%} 
+                                    {%else%} 
+                                        {% set margin = 'ms-2'%}    
+                                    {% endif %}
+
+                                    <div class="col-9 d-block {{margin}}">
+                                        <div class="d-block messages msg_sent">
+                                            <h6>{{comment.title[0]|upper}}{{comment.title[1:]}}</h6>
+                                            <p>{{comment.text[0]|upper}}{{comment.text[1:]}}</p>
+                                            {% set date = comment.creation_date|clean_date %}
+                                            <time datetime="{{date}}">{{user.surname|title}} • {{date}}</time>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            {% if not exists.test %}
+                                <p class="ps-4 text-white">Inca nu au fost adaugate comentarii.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="px-3">
+                    <form class="row" action="{{url_for('data.comment', id=user.id,eval_id=eval_id,criteria=criteria)}}" method="POST" id="comment-form-{{id}}" data-id="{{id}}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="col-12 mt-2">
+                            {{ input_group('comment-form-'+id|string+'-title','title','text','Titlu') }}
+                        </div>
+                        <div class="col-12">
+                            {{ text_area('comment-form-'+id|string+'-text','text','text','Text') }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary text-white rounded-2 w-100" id="comment-form-button" form="comment-form-{{id}}" type="submit">Adauga</button>
+            </div>
+        </div>
+    {%- endmacro %}
+
+    <main>
+        <div class="container-fluid my-3">
+            <div class="row g-3 text-dark d-flex justify-content-between">
+                <div class="col col-12">
+                    <div class="rounded-2 bg-white bg-gradient soft-shadow py-3 border-top border-info">
+                        <p class="mx-3 mb-2 fstyle-primary text-secondary small-head fw-bold">
+                            {{ current_employee.name  | title}} {{current_employee.surname | title}}
+                            {% if assignments %}
+                            - {{loop_objects_name(assignments)}}
+                            {% endif %}
+                        </p> 
+                        {% if active_projects | length > 1 %}                     
+                            <div class="mx-3 mb-3">
+                                {% for proj in active_projects %}
+                                    {% if user.is_manager() %}
+                                        <a href="{{ url_for('views.employee',project_id=proj.id,id=current_employee.id) }}" class="badge text-decoration-none text-dark bg-fourth text-white rounded-pill py-2 px-2 me-2">{{proj.name[:19]|upper}}{{'...' if proj.name[19]}}</a>
+                                    {% else %}
+                                        <a href="{{ url_for('views.home_filter',project_id=proj.id) }}" class="badge text-decoration-none text-dark bg-fourth text-white rounded-pill py-2 px-2 me-2">{{proj.name[:19]|upper}}{{'...' if proj.name[19]}}</a>
+                                    {% endif %}                                
+                                {% endfor %}
+                                <hr>
+                            </div>
+                        {% endif %}
+       
+                        <div class="ms-3 d-flex flex-wrap">
+                            {% if user.is_manager() %}
+                                <a type="button" href="{{url_for('views.evaluation', project_id=project_id, id=current_employee.id)}}" class="btn btn-primary text-white rounded-2">
+                                    Evaluati
+                                </a>                        
+                                <a type="button" class="btn btn-primary text-white rounded-2 ms-2" data-bs-toggle="modal" data-bs-target="#assignment-modal">
+                                    Functie
+                                </a>
+                                <div class="modal fade" id="assignment-modal" tabindex="-1" aria-labelledby="view-project-modal"
+                                aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        {{modal_assignment_form(project_id)}}
+                                    </div>
+                                </div>     
+                            {% endif %}          
+                        </div>
+                    </div>
+                </div>
+                {% if all_averages %}
+                <div class="col col-12">   
+                    <div class="bg-white bg-gradient rounded-2 soft-shadow py-3">  
+                        <p class="mx-3 mb-2 fstyle-primary text-secondary small-head fw-bold">Statistici evaluari</p>
+                        <div class="my-3">
+                            <p class="ms-3">*mediile totale si cele pentru criterii sunt calculate din evaluarile unui membru pe toate proiectele</p>
+                            {{criteria_legend()}}
+                            <div class="mx-1">
+                            <!-- default prevents None from being printed out by default behaviour of {} -->       
+                                {{interval_form(id_name="employee")}}
+                                {{ delete_interval() }}
+                                <div class="row g-3 gallery mt-3">    
+                                    <div class="d-flex mb-2 mx-3">
+                                        <h3 class="fstyle-primary text-secondary small-head fw-bold">Toate proiectele</h3> 
+                                        <hr class="align-self-center flex-grow-1 mx-3">
+                                    </div>
+                                    {% set classes = ('allMovingMeanChart','allPieMeanChart','allPieMedianChart', 'allPieModeChart')%}     
+
+                                    {{display_section_charts(all_averages,classes)}}
+                                </div>   
+
+                                {% if project_averages %}
+                                    <div class="row g-3 gallery mt-3">                                        
+                                        <div class="d-flex mb-2 mx-3">
+                                            <h3 class="fstyle-primary text-secondary small-head fw-bold"> Proiect: "{{project_name[:19]|title}}{{'...' if project_name[19]}}"</h3>
+                                            <hr class="align-self-center flex-grow-1 mx-3">
+                                        </div>
+                        
+                                        {% set classes = ('projectLinearChart','projectPieMeanChart', 'projectPieMedianChart', 'projectPieModeChart')%}     
+                                    
+                                        {{display_section_charts(project_averages,classes)}}                                     
+                                    </div>
+                                {% endif %}  
+                            </div>
+                        </div>
+                    </div>   
+                </div>
+                {% endif %}  
+                    {% if evals %}
+                    <div class="col col-12 col-lg-8">   
+                        <div class="rounded-2 bg-white bg-gradient soft-shadow pt-3 pb-2"> 
+                            <p class="mx-3 mb-3 fstyle-primary text-secondary small-head fw-bold">Istoricul evaluarilor</p>
+                            <div class="mx-3 my-3">
+                                {#evals#}
+                                {#evals|selectattr('project_id','equalto',project_id)|list#}
+                                <div class="accordion" id="accordionPanelsExample">
+                                    {% for eval in evals|sort(attribute="creation_date", reverse=true) %}
+                                        {% if loop.index | int > 1%}
+                                            {% set form_id = 1+4*(loop.index - 1)%}                               
+                                        {% else %}
+                                            {% set form_id = 1%}
+                                        {% endif %}   
+                                        <div class="accordition-item {{'mb-3' if not loop.last}}" id="loop.index">
+                                            <h2 class="accordion-header text-main" id="panels-heading{{loop.index}}">
+                                                <button class="accordion-button bg-light-gray bg-gradient border-top border-secondary rounded-2 collapsed text-secondary" type="button" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#panels-collapse{{loop.index}}" aria-controls="panels-collapse{{loop.index}}">
+                                                <b><em>{{eval.creation_date|clean_date}}</em></b>
+                                                </button>
+                                            </h2>
+                                        </div>
+                                        <!-- accordition body is going to contain each eval -->
+                                        <div id="panels-collapse{{loop.index}}" class="accordion-collapse collapse" aria-labelledby="panels-heading{{loop.index}}">
+                                            <div class="accordion-body">
+                                                <div class="d-flex align-items-center multi-gradient-main text-white mt-4 mb-0 px-2 py-2">
+                                                    <h3 class="mb-0" >PRODUCTIVITATE</h3>
+                                                    <!-- <button type="button" class="btn btn-transparent ms-auto comment-btn position-relative" data-bs-toggle="modal" data-bs-target="#view-comments-modal-{{form_id}}" title="Vezi comentariile criteriului">
+                                                        <i class="fas fa-eye text-white" style="height:25px"></i>
+                                                    </button> -->
+                                                    <button type="button" class="btn btn-transparent ms-auto comment-btn position-relative" data-bs-toggle="modal" data-bs-target="#comment-modal-{{form_id}}" title="Adauga un comentariu">
+                                                        <i class="fas fa-plus text-white position-absolute"></i>
+                                                        <i class="fas fa-comment text-white" style="height:25px"></i>
+                                                    </button>
+                                                </div>
+                                                <!-- <div class="modal fade pt-3 pt-sm-5" id="view-comments-modal-{{form_id}}" tabindex="-1" aria-labelledby="view-project-modal"
+                                                aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        {#modal_view(form_id,eval.id,'productivitate')#}
+                                                    </div>
+                                                </div>    -->
+                                                <div class="modal fade" id="comment-modal-{{form_id}}" tabindex="-1" aria-labelledby="view-project-modal"
+                                                aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        {{modal_form(form_id,eval.id,'productivitate')}}
+                                                    </div>
+                                                </div>
+                                                <div class="eval-form-grid check-main mb-3 z-index-5 overflow-hidden border">
+                                                    {{eval_row('eval-row-1', '1. Cunoștințe și experiență profesională','eval-check-1', value=eval.row_1)}}
+                                                    {{eval_row('eval-row-2', '2. Proptitudine și operativitate în realizarea atribuțiilor de serviciu prevăzute în fișa postului','eval-check-2', value=eval.row_2)}}
+                                                    {{eval_row('eval-row-3', '3. Calitatea lucrărilor executate și a activităților desfășurate','eval-check-3', value=eval.row_1)}}
+                                                    {{eval_row('eval-row-4', '4. Intensitatea implicării în utilizarea echipamentelor și a materialelor cu încadrarea în normative de consum','eval-check-4', value=eval.row_4)}}
+                                                    {{eval_row('eval-row-5', '5. Adaptarea la complexitatea muncii, inițiativă și creativitate','eval-check-5', value=eval.row_5)}}
+                                                    {{eval_row('eval-row-6', '6. Stabilește obiective realiste','eval-check-6', value=eval.row_6)}}
+                                                    {{eval_row('eval-row-7', '7. Respectă termenele limită','eval-check-7', value=eval.row_7)}}
+                                                    {{eval_row('eval-row-8', '8. Caută să optimizeze procese','eval-check-8', value=eval.row_8)}}
+                                                    {{eval_row('eval-row-9', '9. Finalizează sarcini','eval-check-9', value=eval.row_9)}}
+                                                    {{eval_row('eval-row-10', '10. Ia decizii bune','eval-check-10', value=eval.row_10)}}
+                                                    <div class="gradient-border-main"></div>
+                                                </div>
+                                                {% set form_id = form_id + 1 %}
+                                                <div class="d-flex align-items-center multi-gradient-second text-white mt-4 mb-0 px-2 py-2">
+                                                    <h3 class="mb-0" >COMUNICARE</h3>
+
+                                                    <button type="button" class="btn btn-transparent ms-auto comment-btn position-relative" data-bs-toggle="modal" data-bs-target="#comment-modal-{{form_id}}" title="Adauga un comentariu">
+                                                        <i class="fas fa-plus text-white position-absolute"></i>
+                                                        <i class="fas fa-comment text-white" style="height:25px"></i>
+                                                    </button>
+                                                </div>
+ 
+                                                <div class="modal fade" id="comment-modal-{{form_id}}" tabindex="-1" aria-labelledby="view-project-modal"
+                                                aria-hidden="true">
+                                                    <div class="modal-dialog">                                                    
+                                                        {{modal_form(form_id,eval.id,'comunicare')}}
+                                                    </div>
+                                                </div>
+                                                <div class="eval-form-grid check-second mb-3 z-index-5 overflow-hidden border">
+                                                    {{eval_row('eval-row-11', '11. Își ascultă colegii','eval-check-11', value=eval.row_11)}}
+                                                    {{eval_row('eval-row-12', '12. Interpretează corect sensul informațiilor primite','eval-check-12', value=eval.row_12)}}
+                                                    {{eval_row('eval-row-13', '13. Comunicare verbală','eval-check-13', value=eval.row_13)}}
+                                                    {{eval_row('eval-row-14', '14. Comunicare scrisă','eval-check-14', value=eval.row_14)}}
+                                                    {{eval_row('eval-row-15', '15. Comunicare eficientă','eval-check-15', value=eval.row_15)}}
+                                                    <div class="gradient-border-second"></div>
+                                                </div>
+                                                {% set form_id = form_id + 1 %}
+                                                <div class="d-flex align-items-center multi-gradient-third text-white mt-4 mb-0 px-2 py-2">
+                                                    <h3 class="mb-0" >LEADERSHIP</h3>
+
+                                                    <button type="button" class="btn btn-transparent ms-auto comment-btn position-relative" data-bs-toggle="modal" data-bs-target="#comment-modal-{{form_id}}" title="Adauga un comentariu">
+                                                        <i class="fas fa-plus text-white position-absolute"></i>
+                                                        <i class="fas fa-comment text-white" style="height:25px"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="modal fade" id="comment-modal-{{form_id}}" tabindex="-1" aria-labelledby="view-project-modal"
+                                                aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        {{modal_form(form_id,eval.id,'leadership')}}
+                                                    </div>
+                                                </div>                                        
+                                                <div class="eval-form-grid check-third mb-3 z-index-5 overflow-hidden border">
+                                                    {{eval_row('eval-row-16', '16. Este un bun exemplu','eval-check-16', value=eval.row_16)}}
+                                                    {{eval_row('eval-row-17', '17. Propune soluții realiste','eval-check-17', value=eval.row_17)}}
+                                                    {{eval_row('eval-row-18', '18. Abordează problemele direct','eval-check-18', value=eval.row_18)}}
+                                                    {{eval_row('eval-row-19', '19. Își motivează colegii','eval-check-19', value=eval.row_19)}}
+                                                    {{eval_row('eval-row-20', '20. Rezolvă conflicte','eval-check-20', value=eval.row_20)}}
+                                                    {{eval_row('eval-row-21', '21. Stabilește așteptări clare','eval-check-21', value=eval.row_21)}}
+                                                    <div class="gradient-border-third"></div>
+                                                </div>
+                                                {% set form_id = form_id + 1 %}
+                                                <div class="d-flex align-items-center multi-gradient-fourth text-white mt-4 mb-0 px-2 py-2">
+                                                    <h3 class="mb-0" >DEZVOLTARE PERSONALA</h3>
+
+                                                    <button type="button" class="btn btn-transparent ms-auto comment-btn position-relative" data-bs-toggle="modal" data-bs-target="#comment-modal-{{form_id}}" title="Adauga un comentariu">
+                                                        <i class="fas fa-plus text-white position-absolute"></i>
+                                                        <i class="fas fa-comment text-white" style="height:25px"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="modal fade" id="comment-modal-{{form_id}}" tabindex="-1" aria-labelledby="comment-project-modal"
+                                                aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        {{modal_form(form_id,eval.id,'dezvoltare-personala')}}
+                                                    </div>
+                                                </div>                                         
+                                                <div class="eval-form-grid check-fourth mb-3 z-index-5 overflow-hidden border">
+                                                    {{eval_row('eval-row-22', '22. Își păstrează calmul în situații limită','eval-check-22', value=eval.row_22)}}
+                                                    {{eval_row('eval-row-23', '23. Este deschis la a învăța','eval-check-23', value=eval.row_23)}}
+                                                    {{eval_row('eval-row-24', '24. Își stabilește obiective de performanță','eval-check-24', value=eval.row_24)}}
+                                                    <div class="gradient-border-fourth"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <div class="col col-12 col-lg-8">
+                        <div class="rounded-2 bg-white bg-gradient soft-shadow py-3"> 
+                            <p class="fstyle-primary small-head fw-bold text-danger ms-3 mb-0">
+                                {% if project_name %}
+                                    {% if user.is_manager() %}
+                                        {{"Membrul nu are evaluari in " + project_name[:19]|title}}{{"..." if project_name[19]}}
+                                    {% else %}
+                                        {{"Nu ati primit inca evaluari in " + project_name[:19]|title}}{{"..." if project_name[19]}}
+                                    {% endif %}
+                                {% else %}
+                                    {{"Inca nu ati primit evaluari"}}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+                                
+                {% if user.is_manager() %}
+                    {% if employees %}
+                        <div class="col col-12 col-lg-4">
+                            <div class="py-3 text-white bg-white bg-gradient rounded-2 justify-content-end overflow-auto soft-shadow" style="max-height: 600px;transition: .3s all ease-in-out;">
+                                <p class="mx-3 mb-2 fstyle-primary text-secondary small-head fw-bold">Alti membri</p>
+                                
+                                {% for employee in employees | sort_asc %}
+                                    <a href="{{url_for('views.employee', project_id=project_id, id=employee.id)}}" class="text-dark text-decoration-none d-block mt-1 mx-3"><small>{{employee.name | title }} {{employee.surname | title}}</small></a>
+                                {% endfor %}                              
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}                
+            </div>
+        </div>
+    </main>
+{% endmacro %}

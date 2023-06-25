@@ -1,0 +1,61 @@
+{% from 'macros/macros.html' import input_group   %}
+{% extends 'base.html' %}
+{% block title %}
+    {{current_user.name}}
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container my-3">
+            <div class="bg-white bg-gradient rounded-2 soft-shadow p-3 border-top border-info">
+                
+                <p class="fstyle-primary text-secondary small-head fw-bold">Date personale</p>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <p>
+                            <b>Nume: </b><span>{{ user.name | title }}</span>
+                        </p>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <p>
+                            <b>Prenume: </b><span>{{ user.surname | title }}</span>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            <b>Email: </b><span>{{ user.email }}</span>
+                        </p>
+                    </div>
+                    {% if user.roles[0].id == 2 %}
+                        <div class="col-12">
+                            <p>
+                                <b>Total evaluari: </b><em><span>{{ user.total }}</span></em>
+                            </p>
+                        </div>  
+                    {% endif %}
+                </div>
+
+                <div class="mt-2">
+                    <p class="fstyle-primary text-secondary small-head fw-bold">Schimbati parola</p>
+    
+                    <form action="{{url_for('auth.profile', id=current_user.id)}}" method="POST" id="profile-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>                        
+                        <div class="row g-2">
+                            <div class="col col-12">
+                                {{ input_group('add-form-name','old','password','Parola veche',icon='fa-lock') }}
+                            </div>
+                            <div class="col col-12">
+                                {{ input_group('add-form-surname','new','password','Parola noua',icon='fa-lock') }}
+                            </div>
+                            <div class="col col-12">
+                                {{ input_group('add-form-email','renew','password','Reintroduceti parola',icon='fa-lock') }}
+                            </div>
+                            <div class="col col-12 text-center mt-3">
+                                <button class="btn btn-primary text-white rounded-2 w-100" id="profile-form-button" type="submit">Adauga</button>
+                            </div>      
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

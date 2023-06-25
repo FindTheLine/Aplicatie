@@ -1,0 +1,128 @@
+{% from 'macros/macros.html' import criteria_legend, interval_form, display_section_charts, delete_interval %}
+
+{% extends 'base.html' %}
+{% block title %}
+    Acasa
+{% endblock %}
+{% block content %}
+<div class="progressContainer d-none"><div id="progress" class="progress"></div></div>
+<main>
+    <div class="container-fluid position-relative text-dark mt-3 mb-3">
+        <div class="row g-3 text-dark d-flex justify-content-between">
+            <div class="col col-12">
+                <div class="bg-white bg-gradient p-3 rounded-2 soft-shadow border-top {{'border-info' if active_projects | length > 0 else 'border-danger'}}">
+                    {% if active_projects | length > 0 %}
+                        <p class="fstyle-primary text-secondary small-head fw-bold">Proiecte active</p>
+                        <div class="me-3">                            
+                            {% for proj in active_projects %}
+                                {% set proj_name = proj.name | lower if not proj.name[26] else proj.name[:25]+'...'%}
+                                <a href="{{ url_for('views.home_filter', project_id=proj.id) }}" class="badge text-decoration-none text-dark bg-fourth text-white rounded-pill py-2 px-2 me-2">{{proj.name[:19]|upper}}{{'...' if proj.name[19]}}</a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="d-flex align-items-center w-100">
+                            <h5 class="text-uppercase text-danger">Nu aveti proiecte active</h5>
+                            <div class="ms-auto">
+                                <a href="{{url_for('views.company')}}" class="btn btn-danger">PROIECTE</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if employees != [] %}
+                {% if team_averages %}
+                    <div class="col col-12">          
+                        <div class="py-3 bg-white bg-gradient rounded-2 soft-shadow">
+                            <p class="ms-3 fstyle-primary text-secondary small-head fw-bold">Statistici "{% if project_name %}
+                                {{project_name[:19]|title}}{{'...' if project_name[19]}}
+                            {% endif %}"</p>
+                            {{ criteria_legend() }}
+
+                            {{ interval_form(id_name="employee") }}
+                            {{ delete_interval() }}
+                            <div class="mx-3">
+                                <div class="row g-3 gallery">      
+                                    {% set classes = ('projectMovingMeanChart','projectPieMeanChart','projectPieMedianChart', 'projectPieModeChart')%}     
+
+                                    {{display_section_charts(team_averages,classes)}}
+                                </div>                               
+                            </div>  
+                        </div>                                                                                          
+                    </div>
+                {% else %}   
+                    {% if project_name %}
+                    <div class="col col-12">          
+                        <div class="py-3 bg-white bg-gradient rounded-2 soft-shadow">
+                            <p class="ms-3 fstyle-primary text-danger small-head fw-bold mb-0">Adaugati evaluari in "{{project_name[:19]|title}}{{'...' if project_name[19]}}" pentru a vedea rezultatele.
+                            </p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col col-12">          
+                        <div class="py-3 bg-white bg-gradient rounded-2 soft-shadow">
+                            <p class="ms-3 fstyle-primary text-danger small-head fw-bold mb-0">Adaugati evaluari in proiecte pentru a vedea rezultatele.
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}              
+            {% endif %}
+
+            <div class="col col-12 align-self-start">
+                <div class="bg-white bg-gradient rounded-2 pt-3 soft-shadow">
+                    {% if employees %}
+                        <div class="col col-12">
+                            <div class="rounded-2 soft-shadow bg-white bg-gradient">
+                                <p class="fstyle-primary text-secondary small-head fw-bold mx-3 pt-3 mb-1">Membri proiectului</p>
+                                <table class="table table-bordered mb-3" id="view-table">
+                                    <thead class="">
+                                        <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Nume</th>
+                                        <th scope="col">Ultima Evaluare in proiect</th>
+                                        <th scope="col">Nr. evaluari in proiect</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for employee in employees %}
+                                            {% if employee.member_evals | list | length > 0 %}
+                                                {% set last_date = employee.member_evals | map(attribute="creation_date") | list | last | clean_date %}
+                                                {% set count = employee.member_evals | list | length %}            
+                                            {% else %}
+                                                {% set last_date = 0 %}
+                                                {% set count = 0 %}
+                                            {% endif %}
+
+                                            <tr class="clickable-row" data-href="{{url_for('views.employee',project_id=project_id,id=employee.id)}}">
+                                                <th scope="row">{{loop.index}}</th>
+                                                <td>{{employee.name | title}} {{employee.surname | title}}</td>
+                                                <td>{{last_date}}</td>
+                                                <td>{{count}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col col-12">
+                            <div class="mx-auto bg-white bg-gradient p-3 mb-3 rounded-2 overflow-hidden soft-shadow">
+                                {% if active_projects %}
+                                <div class="d-flex align-items-center pb-3">
+                                    <p class="fstyle-primary text-secondary small-head fw-bold mb-0">Adaugati membri in "{{project_name[:19]|title}}{{'...' if project_name[19]}}"</p>
+                                    <div class="ms-auto mb-0"><a href="{{url_for('views.company')}}" class="btn btn-primary text-white rounded-2"><i class="fas fa-plus"></i></a></div>
+                                </div>
+                                {% elif inactive_projects and not active_projects %}
+                                <p class="fstyle-primary text-secondary small-head fw-bold">Inca nu aveti un proiect activ pentru inceperea activitatii cu membri</p>
+                                {% elif not active_projects and not inactive_projects %}
+                                <p class="fstyle-primary text-secondary small-head fw-bold">Inca nu aveti creat un proiect pentru inceperea activitatii cu membri</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ current_employee if user.is_manager() else "Acasa"}}
+{% endblock %}
+{% block content %}
+<div class="progressContainer d-none"><div id="progress" class="progress"></div></div>
+    {% from 'employee_page.html' import employee_page %}
+    {% if current_employee.member_evals|list|length > 0 %}
+        {{ employee_page(user=current_user, current_employee=current_employee, current_project=current_project,employees=employees,comment_form=comment_form,
+            project_name=project_name, project_id=project_id,evals=evals,active_projects=active_projects,assignments=assignments,
+            all_averages=all_averages,project_averages=project_averages,comments=comments) }}
+    {% else %}
+        {{ employee_page(user=current_user, current_employee=current_employee, current_project=current_project,employees=employees,comment_form=comment_form,
+            project_name=project_name, project_id=project_id,evals=evals,active_projects=active_projects,assignments=assignments,all_averages=all_averages
+            ) }}
+    {% endif %}
+{% endblock %}

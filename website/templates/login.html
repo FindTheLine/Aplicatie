@@ -1,0 +1,29 @@
+{% from 'macros/macros.html' import input_group %}
+{% extends 'base.html' %}
+{% block title %}Logare{% endblock %}
+{% block content %}
+<main class="login-page">
+  <section>
+    <div class="container">
+      <div class="bg-white mx-auto px-2 py-3 my-3 rounded-2 soft-shadow login">
+        <div class="row g-2 g-md-3 overflow-hidden justify-content-between">
+          <div class="col-12">
+            <div class="login-form overflow-hidden px-1">
+              <p class="fstyle-primary text-secondary small-head">Intra in cont</p>
+              <form class="mb-3" method="POST" action="/login" id="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {{ input_group('login-form-email','email','email','Email',icon='fa-envelope') }}
+                    <div class="mt-2">
+                      {{ input_group('login-form-psw','psw','password','Parolă',icon='fa-lock') }}
+                    </div>
+                    <a href="{{url_for('auth.reset_request')}}">Ai uitat parola?</a>
+                    <button type="submit" class="btn btn-primary text-white rounded-2 mt-2 w-100">Login</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

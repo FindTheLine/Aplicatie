@@ -1,0 +1,218 @@
+
+{% macro input_group(id,name,type,data_label,icon='',pattern='',placeholder='',min_length=2) -%}
+<div class="input-group position-relative my-2">
+    <label for="{{id}}" class="form-label col-12 mt-0">{{data_label}}</label>
+    <!-- {% if icon != '' %}
+        <div class="bg-fourth-light py-2 px-3 border border rounded-start" id="inputGroupPrepend">
+            <i class="fa {{icon}}" ></i>
+        </div>
+    {% endif %} -->
+    <input type="{{type}}" class="form-control rounded-2" id="{{id}}" name="{{name}}" placeholder="{{placeholder}}" data-label="{{data_label}}" title="Introduceti un/o {{data_label|lower}} valid/a" {% if pattern|length %} pattern="{{pattern}}" {% endif %}  minlength="{{min_length}}" data-user-input required="" />
+    <small class="js-form-message col-12 position-absolute start-0 "></small>  
+</div>
+{%- endmacro %}
+
+{% macro text_area(id,name,type,data_label,pattern='',placeholder='',min_length=10) -%}
+<div class="input-group position-relative my-2">
+    <label for="{{id}}" class="form-label col-12 mt-0">{{data_label}}</label>
+    <textarea type="{{type}}" class="form-control rounded" id="{{id}}" name="{{name}}" placeholder="{{placeholder}}" data-label="{{data_label}}" title="Introduceti un {{data_label|lower}} valid" {% if pattern|length %} pattern="{{pattern}}" {% endif %}  minlength="{{min_length}}" data-user-input required=""></textarea>
+    <small class="js-form-message col-12 position-absolute start-0 "></small>  
+</div>
+{%- endmacro %}
+
+{% macro select_group(id,name,data_label,options_list,icon='') -%}
+<div class="input-group position-relative my-2">
+    <label for="{{id}}" class="form-label col-12">{{data_label}}</label>
+    <!-- {% if icon != '' %}
+        <div class="bg-fourth-light py-2 px-3 border border rounded-start" id="inputGroupPrepend">
+            <i class="fa {{icon}}" ></i>
+        </div>
+    {% endif %} -->
+    <select name="{{name}}" id="{{id}}" class="form-select flex-grow-1 rounded-2" data-label="{{data_label}}" data-user-input required>
+        {% if options_list is iterable %}
+            {% for option in options_list %}
+                <option class="form-option text-wrap" value="{{option.id}}">{{option.name | title}}</option>
+            {% endfor %}
+        {% else %}
+            <option class="form-option text-wrap" value="{{options_list.id}}">{{options_list.name | title}}</option>
+        {% endif %}
+    </select>
+    <small class="js-form-message col-12 position-absolute start-0"></small>  
+</div>
+{%- endmacro %}
+
+{%- macro loop_projects(user) -%}
+    {% for proj in user.projects|selectattr('status','equalto',1) %}
+    <span>{{proj.name[:19]|title}}{{'...' if proj.name[19]}}{{ ", " if not loop.last else "" }}</span> <!-- add comma if not last -->
+    {% endfor %}
+{% endmacro -%}
+
+
+{%- macro loop_objects_name(objects) -%}
+    {% for object in objects %}
+    <span>{{object.name[:19]|title}}{{'...' if object.name[19]}}{{ ", " if not loop.last else "" }}</span> <!-- add comma if not last -->
+    {% endfor %}
+{% endmacro -%}
+
+{%- macro criteria_legend() -%}
+<div class="overflow-hidden text-white">
+    <div class="d-flex pt-3 px-3 bg-fourth bg-gradient overflow-hidden justify-content-between">
+        <div class="d-flex flex-column flex-grow-0 align-items-center me-1">
+            <p class="criteria-circle criteria-circle1 flex-grow-0 fstyle-primary"><span class="criteria-circle-text">C1<span></p>
+            <p class="responsive-small-head text-white fstyle-secondary">Productivitate</p>
+        </div>
+        <div class="d-flex flex-column flex-grow-0 align-items-center me-1">
+            <p class="criteria-circle criteria-circle2 flex-grow-0 fstyle-primary"><span class="criteria-circle-text">C2<span></p>
+            <p class="responsive-small-head text-white fstyle-secondary">Comunicare</p>
+        </div>
+        <div class="d-flex flex-column flex-grow-0 align-items-center me-1">
+            <p class="criteria-circle criteria-circle3 flex-grow-0 fstyle-primary"><span class="criteria-circle-text">C3<span></p>
+            <p class="responsive-small-head text-white fstyle-secondary">Leadership</p>
+        </div>
+        <div class="d-flex flex-column flex-grow-0 align-items-center">
+            <p class="criteria-circle criteria-circle4 flex-grow-0 fstyle-primary"><span class="criteria-circle-text">C4<span></p>
+            <p class="responsive-small-head text-white fstyle-secondary">Dezvoltare Personala</p>
+        </div>
+    </div>
+</div>
+{% endmacro -%}
+
+{%- macro interval_form(id_name) -%}
+<form action="{{ url_for('data.interval') }}" method="POST" id="{{id_name}}-interval-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="px-3">
+        <div class="mb-3">
+            <div class="fstyle-primary small-head text-secondary fw-bold mb-2 mt-3">
+                <div class="intervalContainer d-flex">  
+                    <span>Intervalul evaluarilor</span>       
+                    <div class="ms-auto">
+                        <span class="firstDatePref"></span> 
+                        <span class="firstDate text-success"></span> 
+                        <span class="secondDatePref"></span> 
+                        <span class="secondDate text-danger"></span>
+                    </div>             
+                </div>
+            </div> 
+
+            <div class="row">
+                <div class="col-12 col-md-5 mb-3 mb-md-0">
+                    {{input_group('{{id_name}}-interval-form-startDate','startDate','date','Inceputul activitatii')}}
+                </div>
+                <div class="col-12 col-md-5">
+                    {{input_group('{{id_name}}-interval-form-endDate','endDate','date','Sfarsitul activitatii')}}
+                </div>
+                <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary text-white rounded-2 w-100 mb-2" type="submit">Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endmacro -%} 
+
+{%- macro display_section_charts(averages,classes) -%}
+    {% for average in averages %}   
+        {% set index = loop.index0 %}       
+        {% if average['label'] %}
+            <div class="d-flex justify-content-center justify-content-md-start col-12 col-lg-8 col-xl-6 flex-grow-1">
+                <canvas class="mt-4 {{classes[index]}}" data-labels="{{average['label']}}" data-avg="{{average['0']}}" data-crit1="{{average['1']}}" data-crit2="{{average['2']}}" data-crit3="{{average['3']}}" data-crit4="{{average['4']}}"></canvas>
+            </div>  
+        {% else %}     
+            <div class="d-flex justify-content-center justify-content-md-start col-12 col-lg-4 col-xl-6 flex-grow-1">
+                <canvas class="mt-4 {{classes[index]}}" data-crit="{{average['1']}},{{average['2']}},{{average['3']}},{{average['4']}}" style="max-height:500px"></canvas>
+            </div>     
+        {% endif %}         
+    {%endfor%} 
+{% endmacro -%}
+
+{%- macro delete_interval() -%}
+    <div class="d-flex ms-3">
+        <a type="button" class="delete-interval-btn text-danger text-decoration-underline" style="display: none;" onclick="deleteInterval()" >Sterge Intervalul</a>
+    </div>
+{% endmacro -%}
+
+{% macro notifications(user,new_notifications) -%}
+    {% if new_notifications %}                       
+        {% for notif in new_notifications %}
+            {% if user.is_manager() and notif.if_comment == true %}
+                <span class="nav-item dropdown-item">
+                    <a href="{{url_for('views.employee',project_id=notif.project_id,id=notif.sender_id)}}" class="text-secondary text-wrap text-decoration-none">{{notif.text[0]|upper}}{{notif.text[1:]}}</a>
+                </span>
+            {% elif not user.is_manager() and notif.if_comment == true %}
+                <span class="nav-item dropdown-item">
+                    <a href="{{url_for('views.home')}}" class="text-secondary text-wrap text-decoration-none">{{notif.text[0]|upper}}{{notif.text[1:]}}</a>
+                </span>
+            {% else %}
+                <span class="nav-item dropdown-item">
+                    <span class="text-secondary text-wrap">{{notif.text[0]|upper}}{{notif.text[1:]}}</span>
+                </span>
+            {% endif %}
+            {% if not loop.last %}
+                <hr style="margin: 0 10px;">     
+            {% endif %}
+        {% endfor %}
+        <form id="mark_notifications" class="text-center second-bg border-top" action="{{url_for('data.mark_as_read',id=user.id)}}" method="POST">
+            <button type="submit" class="btn notification-btn text-white w-100" form="mark_notifications">Marcheaza ca citite</button>
+        </form>
+    {% else %}
+        <span class="nav-item text-center dropdown-item">
+            <span class="text-secondary text-wrap">Nu ai notificari noi</span>
+        </span>
+    {% endif %}
+{%-endmacro%}
+
+{% macro eval_row(row_id, label, check_name, value=0) -%}
+<!-- access last char of id and covert it to int -->
+    {% set end_of_id = row_id[-1]|int %} 
+    <div class="row eval-row align-items-stretch bg-white border-bottom border-secondary" data-row-id="{{row_id}}">
+        <div class="col col-xl-4 border-start" style="min-width: 125px;">
+            <p class="mb-1 ms-2">
+                {{label}}
+            </p>
+        </div>
+        {% if not value %}
+            <div class="col bg-secondary d-flex align-items-center px-0">
+                <label class="eval-check-container">
+                    <input type="radio" name="{{check_name}}" data-check-name="{{check_name}}" value="6">
+                    <span class="checkmark border-start border-secondary"></span>
+                </label>
+            </div>
+            <div class="col bg-secondary d-flex align-items-center px-0">
+                <label class="eval-check-container">
+                    <input type="radio" name="{{check_name}}" data-check-name="{{check_name}}" value="5">
+                    <span class="checkmark border-start border-secondary"></span>
+                </label>
+            </div>
+            <div class="col bg-secondary d-flex align-items-center px-0">
+                <label class="eval-check-container">
+                    <input type="radio" name="{{check_name}}" data-check-name="{{check_name}}" value="4">
+                    <span class="checkmark border-start border-secondary"></span>
+                </label>
+            </div>
+            <div class="col bg-secondary d-flex align-items-center px-0">
+                <label class="eval-check-container">
+                    <input type="radio" name="{{check_name}}" data-check-name="{{check_name}}" value="3">
+                    <span class="checkmark border-start border-secondary"></span>
+                </label>
+            </div>
+            <div class="col bg-secondary d-flex align-items-center px-0">
+                <label class="eval-check-container">
+                    <input type="radio" name="{{check_name}}" data-check-name="{{check_name}}" value="2">
+                    <span class="checkmark border-start border-secondary"></span>
+                </label>
+            </div>
+            <div class="col bg-secondary d-flex align-items-center px-0">
+                <label class="eval-check-container">
+                    <input type="radio" name="{{check_name}}" data-check-name="{{check_name}}" value="1">
+                    <span class="checkmark border-start border-secondary"></span>
+                </label>
+            </div>    
+        {% else %}
+            <div class="col d-flex align-items-center border-start border-secondary px-0">
+                <p class="text-center mx-auto my-2">{{value}}</p>
+            </div>    
+        {% endif %}
+    </div>
+{%- endmacro %}
+

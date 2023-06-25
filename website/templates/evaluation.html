@@ -1,0 +1,107 @@
+{% from 'macros/macros.html' import input_group, loop_projects, eval_row, loop_objects_name %}
+
+{% extends 'base.html' %}
+
+{% block title %}
+    Evaluare
+{% endblock %}
+
+{% block content %}
+<div class="progressContainer d-none"><div id="progress" class="progress"></div></div>
+    <main>
+        <div class="container my-3">
+            <div class="bg-white bg-gradient rounded-2 overflow-hidden soft-shadow border-top border-info">
+                <div class="p-3 mb-0">
+                    <p class="fstyle-primary small-head text-secondary fw-bold">Evaluare</p>
+                    <hr class="my-2">
+                    <p class="fstyle-primary small-head text-secondary fw-bold">{{current_employee.name|title}} {{current_employee.surname|title}} - {{current_project.name[:19]|title}}{{'...' if current_project.name[19]}}</p>
+                </div>
+                <div class="side-bg bg-white px-3">
+                    <div class="row">
+                        <div class="col-12 col-sm-6">
+                            {% if current_employee.member_evals | list | length > 0 %}
+                                {% set last_date = current_employee.member_evals | map(attribute="creation_date") | list | last | clean_date %}
+                            {% else %}
+                                {% set last_date = 0 %}
+                            {% endif %}
+                            <p><b>Proiecte active:</b> {{loop_projects(current_employee)}}</p>
+                            <p><b>Ultima evaluare in proiect:</b> {{ last_date }}</p>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <p><b>Functii:</b> {% if assignments %}
+                                    {{loop_objects_name(assignments)}}
+                                {% else %}
+                                -
+                                {% endif %}</p>
+                            <p><b>Departament:</b> {{current_employee.department.name | title }}</p>
+                            <p><b>Manager:</b> {{user.name | title}} {{user.surname | title}}</p>
+                        </div>
+                    </div>  
+                </div>
+                <div class="overflow-hidden">
+                    {% set proj_id = current_employee.projects %}
+                    <form action="{{ url_for('views.evaluation', project_id=project_id, id=current_employee.id) }}" method="POST" class="" id="eval-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="px-3 bg-light bg-gradient">
+                            <div class="mb-3">
+                                <p class="fstyle-primary small-head text-secondary fw-bold mb-2 mt-3">Perioada evaluata</p>
+                                <div class="row">
+                                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                        {{input_group('eval-form-startDate','startDate','date','Inceputul activitatii',icon='fa-calendar-days')}}
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        {{input_group('eval-form-endDate','endDate','date','Sfarsitul activitatii',icon='fa-calendar-days')}}
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-info">*punctele sunt de la 5 la 1, maximul este careul stang</p>
+                            <h3 class="mt-4 mb-0 px-2 py-2 multi-gradient-main text-white text-center" >PRODUCTIVITATE</h3>
+                            <div class="eval-form-grid check-main mb-3 z-index-5 overflow-hidden border">
+                                {{eval_row('eval-row-1', '1. Cunoștințe și experiență profesională','eval-check-1')}}
+                                {{eval_row('eval-row-2', '2. Proptitudine și operativitate în realizarea atribuțiilor de serviciu prevăzute în fișa postului','eval-check-2')}}
+                                {{eval_row('eval-row-3', '3. Calitatea lucrărilor executate și a activităților desfășurate','eval-check-3')}}
+                                {{eval_row('eval-row-4', '4. Intensitatea implicării în utilizarea echipamentelor și a materialelor cu încadrarea în normative de consum','eval-check-4')}}
+                                {{eval_row('eval-row-5', '5. Adaptarea la complexitatea muncii, inițiativă și creativitate','eval-check-5')}}
+                                {{eval_row('eval-row-6', '6. Stabilește obiective realiste','eval-check-6')}}
+                                {{eval_row('eval-row-7', '7. Respectă termenele limită','eval-check-7')}}
+                                {{eval_row('eval-row-8', '8. Caută să optimizeze procese','eval-check-8')}}
+                                {{eval_row('eval-row-9', '9. Finalizează sarcini','eval-check-9')}}
+                                {{eval_row('eval-row-10', '10. Ia decizii bune','eval-check-10')}}
+                                <div class="multi-gradient-main" style="height:3px;width:100%;"></div>
+                            </div>
+                            <h3 class="mt-5 mb-0 px-2 py-2 multi-gradient-second text-white text-center" >COMUNICARE</h3>
+                            <div class="eval-form-grid check-second mb-3 z-index-5 overflow-hidden border">
+                                {{eval_row('eval-row-11', '11. Își ascultă colegii','eval-check-11')}}
+                                {{eval_row('eval-row-12', '12. Interpretează corect sensul informațiilor primite','eval-check-12')}}
+                                {{eval_row('eval-row-13', '13. Comunicare verbală','eval-check-13')}}
+                                {{eval_row('eval-row-14', '14. Comunicare scrisă','eval-check-14')}}
+                                {{eval_row('eval-row-15', '15. Comunicare eficientă','eval-check-15')}}
+                                <div class="multi-gradient-second" style="height:3px;width:100%;"></div>
+                            </div>
+                            <h3 class="mt-5 mb-0 px-2 py-2 multi-gradient-third text-white text-center" >LEADERSHIP</h3>
+                            <div class="eval-form-grid check-third mb-3 z-index-5 overflow-hidden border">
+                                {{eval_row('eval-row-16', '16. Este un bun exemplu','eval-check-16')}}
+                                {{eval_row('eval-row-17', '17. Propune soluții realiste','eval-check-17')}}
+                                {{eval_row('eval-row-18', '18. Abordează problemele direct','eval-check-18')}}
+                                {{eval_row('eval-row-19', '19. Își motivează colegii','eval-check-19')}}
+                                {{eval_row('eval-row-20', '20. Rezolvă conflicte','eval-check-20')}}
+                                {{eval_row('eval-row-21', '21. Stabilește așteptări clare','eval-check-21')}}
+                                <div class="multi-gradient-third" style="height:3px;width:100%;"></div>
+                            </div>
+                            <h3 class="mt-5 mb-0 px-2 py-2 multi-gradient-fourth text-white text-center" >DEZVOLTARE PERSONALĂ</h3>
+                            <div class="eval-form-grid check-fourth mb-3 z-index-5 overflow-hidden border">
+                                {{eval_row('eval-row-22', '22. Își păstrează calmul în situații limită','eval-check-22')}}
+                                {{eval_row('eval-row-23', '23. Este deschis la a învăța','eval-check-23')}}
+                                {{eval_row('eval-row-24', '24. Își stabilește obiective de performanță','eval-check-24')}}
+                                <div class="multi-gradient-fourth" style="height:3px;width:100%;"></div>
+                            </div>                            
+                        </div>
+                        <div class="p-3 w-100 d-flex bg-light bg-gradient">
+                            <button class="btn btn-primary text-white rounded-2 w-100" type="submit">SALVEAZA</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

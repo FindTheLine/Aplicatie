@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include 'includes/html_head.html'   %}
+<body class="bg-allpages position-relative fstyle-secondary">
+    {% include 'includes/navbar.html' %}
+    <div class="navbar-height w-100" style="height:64px;"></div>
+    <div class="open-nav-overlay overlay d-none" style="background-color:transparent;min-width:100vw;min-height:100vh;"></div>
+    <div class="container-fluid base-alerts position-sticky text-white" style="top:50px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'error' %}
+                <div class="alert base-alert alert-danger rounded-2 py-1 position-fixed" role="alert" id="base-danger">                    
+                    <p class="my-1">{{message}}</p>
+                </div>
+                {% else %}
+                <div class="alert base-alert alert-success rounded-2 py-1 position-fixed" role="alert" id="base-success">                    
+                    <p class="my-1">{{message}}</p>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    </div>
+    {% block content %}
+    {% endblock %}
+    {% include 'includes/footer.html' %}
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.4.0/mdb.min.js" ></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{url_for('static', filename='js/all.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/main.js')}}"></script>
+    <script>
+        $(document).ready(function(){
+            $('#view-table').dataTable({
+                "language": {
+                    "emptyTable":     "Nu au fost gasite rezultate",
+                    "info":           "De la _START_ pana la _END_ din _TOTAL_ intrari",
+                    "infoEmpty":      "0 din 0 rezultate",
+                    "infoFiltered":   "(rezultate gasite din _MAX_ de intrari)",
+                    "infoPostFix":    "",
+                    "thousands":      ",",
+                    "lengthMenu":     "Arata _MENU_ intrari",
+                    "loadingRecords": "Se incarca...",
+                    "processing":     "",
+                    "search":         "Cauta:",
+                    "zeroRecords":    "Nu a fost gasit niciun rezultat",
+                    "paginate": {
+                        "first":      "Primul",
+                        "last":       "Ultimul",
+                        "next":       ">",
+                        "previous":   "<"
+                    },
+                "aria": {
+                        "sortAscending":  ": sorteaza dupa aceasta coloana crescator",
+                        "sortDescending": ": sorteaza dupa aceasta coloana descrescator"
+                    },
+                }
+            });
+            $('#view-table-2').dataTable({
+                "language": {
+                    "emptyTable":     "Nu au fost gasite rezultate",
+                    "info":           "De la _START_ pana la _END_ din _TOTAL_ intrari",
+                    "infoEmpty":      "0 din 0 rezultate",
+                    "infoFiltered":   "(rezultate gasite din _MAX_ de intrari)",
+                    "infoPostFix":    "",
+                    "thousands":      ",",
+                    "lengthMenu":     "Arata _MENU_ intrari",
+                    "loadingRecords": "Se incarca...",
+                    "processing":     "",
+                    "search":         "Cauta:",
+                    "zeroRecords":    "Nu a fost gasit niciun rezultat",
+                    "paginate": {
+                        "first":      "Primul",
+                        "last":       "Ultimul",
+                        "next":       ">",
+                        "previous":   "<"
+                    },
+                "aria": {
+                        "sortAscending":  ": sorteaza dupa aceasta coloana crescator",
+                        "sortDescending": ": sorteaza dupa aceasta coloana descrescator"
+                    },
+                }
+            });
+        });
+        $(window).resize(function () {
+            $("#view-table").resize();
+            $("#view-table-2").resize();
+        });
+    </script>
+    <!-- <script>
+        AOS.init({
+          offset: 75,
+          duration: 450,
+          delay: 0,
+          easing: 'ease-in-out',
+          anchorPlacement: 'bottom-bottom',
+          disable: function() {
+              var maxWidth = 800;
+              return window.innerWidth < maxWidth;
+          }
+        });
+      </script> -->
+      {% block script %}
+        
+      {% endblock %}
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% from 'macros/macros.html' import notifications %}
+
+<header class="box-shadow-1">
+    <nav class="navbar navbar-expand-lg bg-primary bg-gradient fixed-top">
+        <div class="container-fluid px-0 px-sm-3">
+            <a class="navbar-brand text-white fs-4 pb-0 pb-lg-1 ms-3 ms-sm-0" href="/">teaMStats</a>
+            {% if user %} 
+                <span class="dropdown ms-auto me-3 my-3 my-md-0 d-inline-block d-lg-none" id="notifications">
+                    <!-- <div class="py-2 position-absolute top-50 start-50 translate-middle rounded-top bg-white" id="toggle-bg" style="display:none;height: 55px;width:40px;"></div> -->  
+                        <a type="button" class="d-flex flex-column dropdown-toggle dropdown-button justify-content-center ms-3 align-items-center text-decoration-none text-white" id="notificationBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-bell text-white"></i>
+                        </a>
+                        <div class="rounded-2 nav-dropmenu dropdown-menu shadow-3 overflow-auto" aria-labelledby="notificationBtn" id="notifDropdown">
+                            {{notifications(user,new_notifications)}}
+                        </div>
+                </span>
+                <div class="hamburger-menu navbar-toggler d-lg-none iphone-btn me-3 me-sm-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <div class="hamburger-line"></div>
+                </div>
+                <div class="collapse navbar-collapse bg-lg-none h-auto" id="navbarNav">
+                    <div class="navbar-nav px-2 px-sm-0 flex-column align-items-center flex-md-row {{'justify-content-lg-around' if user and user.is_manager() else 'justify-content-md-end'}} w-100">
+                    <!-- if user deleted -->
+                    {% if user and user.is_manager() %}               
+                        <span class="nav-item ms-lg-5 me-md-3 py-1 py-md-2" >
+                            <a class="nav-link fw-bold fs-6 d-block d-sm-inline-block" aria-current="page" href="{{url_for('views.home')}}">Acasă</a>
+                        </span>
+                        <span class="nav-item me-md-3 py-1 py-md-2">
+                            <a class="nav-link fw-bold fs-6 d-block d-sm-inline-block" aria-current="page" href="{{url_for('auth.add')}}">Inregistrare</a>
+                        </span>
+                        <span class="nav-item py-1 py-md-2 flex-md-grow-1">
+                            <a class="nav-link fw-bold fs-6  d-block d-sm-inline-block" aria-current="page" href="{{url_for('views.company')}}">Firma</a>
+                        </span>
+                    {% endif %}
+                    <div class="d-flex py-md-0">
+                        {% if user %}                                    
+                            {% if user.is_manager() %}
+                                <span class="nav-item my-3 my-lg-0">
+                                    <a type="button" class="d-flex flex-column justify-content-center align-items-center text-decoration-none text-white" id="search-icon">
+                                        <i class="fa fa-search fa-2x text-white"></i>
+                                    </a>
+                                </span>
+                            {% endif %}
+                        {% endif %}
+
+                        <span class="nav-item dropdown position-relative my-3 my-md-0 d-none d-lg-block" id="notifications">
+                            <div class="py-2 position-absolute top-50 start-50 translate-middle rounded-top bg-white" id="toggle-bg" style="display:none;height: 55px;width:40px;"></div>
+                            <a type="button" class="d-flex flex-column dropdown-toggle dropdown-button justify-content-center ms-3 align-items-center text-decoration-none text-white position-relative" id="notificationBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-bell fa-2x text-white"></i>
+                                {% if new_notifications %}
+                                    <span class="badge bg-danger rounded-circle position-absolute top-50 end-50 z-index-5 text-center" style="font-size:12px!important;border:1px solid;font-weight:500;">{{new_notifications|length}}</span>
+                                {% endif %}
+                            </a>
+                            <div class="nav-dropmenu overflow-auto dropdown-menu shadow-3 py-0" aria-labelledby="notificationBtn" style="max-height:300px;font-size:14px;">                                
+                                {{notifications(user,new_notifications)}}
+                            </div>
+                        </span>
+                        <span class="nav-item account position-relative my-3 my-lg-0 ms-3" id="account">      
+                            <div class="dropdown">
+                                <a type="button" class="d-flex flex-column dropdown-toggle account-dropdown-button justify-content-center align-items-center text-decoration-none text-white " id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="account-icon fa fa-user fa-2x text-white z-index-5"></i>
+                                </a>
+                            
+                                <ul class="dropdown-menu nav-dropmenu" aria-labelledby="dropdownMenuLink">
+                                    <li><a href="{{url_for('auth.profile', id=current_user.id)}}" class="nav-link text-secondary">Cont</a></li>
+                                    <li><a href="{{url_for('auth.logout')}}" class="nav-link text-secondary ">Iesire</a></li>
+                                </ul>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% if user %}                                    
+            {% if user.is_manager() %}
+                {% if employees != [] %}
+                    <div class="search-wrapper position-absolute top-100 start-0 end-0 w-100 align-items-center justify-content-center border-bottom z-index-5">
+                        <div class="bg-light bg-gradient strong-shadow py-3 w-100">
+                            <div class="container-fluid px-0 px-1 px-sm-0 px-lg-3">
+                                <form method="POST" action="{{ url_for('views.company') }}" class="nav-form d-flex align-items-center" id="nav-form">
+                                    {{ form.hidden_tag() }}
+                                    <div class="search-dropdown dropdown rounded-2 d-flex">
+                                        <input type="text" class="nav-input border-end-0 shadow-3-strong form-control border-end-0" class="dropbtn" type="search" placeholder="{{'Format data: Z.L.A' if user.is_manager() == false else ''}}" autocomplete="off" id="nav-input" name="searched"
+                                            aria-label="Search">
+                                        <div id="search-drop" class="dropdown-content dropdown-menu">
+                                            {% for employee in search_employees %}
+                                                <a href="{{url_for('views.employee_redirect', id=employee.id)}}">{{employee.name|title}} {{employee.surname|title}}</a>
+                                            {% endfor %}                           
+                                        </div>
+                                        <button form="nav-form" class="nav-search btn btn-primary text-white px-4 d-flex align-items-center"
+                                        type="submit"><span><i class="fa fa-search"></i></span></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}    
+            {% endif %}
+        {% endif %}
+    </nav>
+</header>

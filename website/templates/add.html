@@ -1,0 +1,42 @@
+{% from 'macros/macros.html' import input_group, select_group   %}
+{% extends 'base.html' %}{% block title %}Adăugare{% endblock %}
+{% block content %}
+    <main>
+        <section class="angajat-submit-form">
+            <div class="container pt-0 mt-3 mb-3">
+                <div class="mx-auto">
+                    <div class="bg-white bg-gradient soft-shadow rounded-2 p-3 border-top border-info">
+                        <p class="fstyle-primary text-secondary small-head fw-bold">Inregistrare angajat</p>
+                        <form action="{{url_for('auth.add')}}" method="POST" id="add-form" novalidate>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="row g-2 g-md-3">
+                                <div class="col col-12 col-md-6">
+                                    {{ input_group('add-form-name','name','text','Nume',icon='fa-user',pattern='[a-zA-Z]*') }}
+                                </div>
+                                <div class="col col-12 col-md-6">
+                                    {{ input_group('add-form-surname','surname','text','Prenume',icon='fa-user',pattern='[a-zA-Z]*') }}
+                                </div>
+                                <div class="col col-12 col-md-6">
+                                    {{ input_group('add-form-email','email','email','Email',icon='fa-envelope') }}
+                                </div>
+                                <div class="col col-12 col-md-6 position-relative">
+                                    <small class="text-info position-absolute left-0 mb-3" style="bottom: -45px;">*doar utilizatorii cu rolul de membru pot fi evaluati</small>
+                                    {{select_group("add-form-role","role","Rol in firma",role_choices)}}
+                                </div>
+                                <div class="col col-12 col-md-6">
+                                    {{select_group("add-form-department","department","Departament",department_choices)}}
+                                </div>
+                                <div class="col col-12 col-md-6 text-center align-self-bottom mt-3 mt-md-2 mb-2 d-flex align-items-md-end">
+                                    <button class="btn btn-primary text-white rounded-2 w-100" id="add-form-button" type="submit">Adauga</button>
+                                </div>              
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    {% block script %}
+
+    {% endblock %}
+{% endblock %}
